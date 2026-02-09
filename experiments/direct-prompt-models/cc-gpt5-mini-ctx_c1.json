@@ -1,0 +1,3 @@
+[
+    {"label": "CC-GPT-5-mini", "method": "directprompt", "llm": "gpt-5-mini", "use_context": true}
+]

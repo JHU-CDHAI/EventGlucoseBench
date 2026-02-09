@@ -1,0 +1,131 @@
+logs
+config.toml
+
+# Security - Never commit credentials
+env.sh
+env.sh.BACKUP_WITH_SECRETS
+*.key
+*.pem
+*.token
+.env
+.env.*
+!.env.example
+*.secret
+
+# Model and data directories
+_Model
+_WorkSpace/*
+_Data
+_Model/
+_Data/
+Data/
+.venv/** 
+**/venv/** 
+**/.venv/** 
+benchmark_results/
+
+notebook_results/
+
+*.pdf
+*.bbl
+*.blg 
+*.fdb_latexmk
+*.aux
+
+_Model
+
+curie/venv
+code_logging
+curie/config.toml
+*.pyc
+baselines/openhands/session_cache
+baselines/openhands/workspace
+.aws_creds
+baselines/autobuild/.OAI_CONFIG_LIST
+curie/setup/env.sh
+workspace/*
+curie.egg-info/
+benchmark/*txt
+*.log
+baselines/openhands/config.toml
+curie/tests/test_claude.py
+curie/setup/*
+*.DS_Store
+# *.vscode/
+dist/
+curie_ai.egg-info/
+tmp*
+
+cik_benchmark.egg-info/
+data/ 
+models/
+*.egg-info/
+# results/
+
+
+**.aux 
+**.log
+**.out 
+**.synctex.gz
+
+
+
+
+# data
+# data/
+.venv/** 
+_Eval/**
+**/_version.py 
+*.egg-info/
+**/opt_ml_model/**
+**/opt_ml/input/data**
+**/opt_ml/** 
+**/opt_program/external/**
+**/opt_program/pipeline/**
+*/wandb/*
+*_TODO/
+document/
+# _static/
+**/model/**
+Data_*/
+# */data/*
+Documents/
+2022Data/
+_old/
+.ipynb_checkpoints/
+__pycache__/*
+*.pyc  
+*/.ipynb_checkpoints/
+*/_old 
+*/__pycache__/*
+*/Output
+*/__pycache__
+*/*/__pycache__
+*/_230113version
+*.log
+# *.pkl
+# *.p
+*/L2
+.DS_Store
+*.rec2feat.egg-info/*
+0-DataRaw
+*/TODO/
+TODO/
+*.code-workspace*
+# *-Data*
+
+**/mlruns/**
+
+
+
+# code/external/
+**/opt_ml_processing/**
+
+
+learning/
+
+
+**.aux
+**.log
+**.out 
+**.synctex.gz 

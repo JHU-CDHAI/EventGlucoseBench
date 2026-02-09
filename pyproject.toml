@@ -1,0 +1,273 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eglu-bench"
+description = "EventGlucose: Benchmarking Event-Aware Glucose Forecasting"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "EventGlucose AI Team"},
+]
+maintainers = [
+    {name = "EventGlucose AI Team"}
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.12"
+dependencies = [
+    # Core data processing (compatible versions)
+    "numpy>=1.21.0,<2.0.0",  # PyTorch compatibility
+    "pandas>=2.0.0,<2.3.0",
+    "scipy>=1.11.0,<1.14.0",
+    "pyarrow>=15.0.0",
+    
+    # Machine Learning
+    "scikit-learn>=1.3.0,<1.6.0",
+    "xgboost>=2.0.0,<2.1.0",
+    "lightgbm>=4.0.0,<5.0.0",
+    "optuna>=3.5.0,<5.0.0",
+    "shap>=0.45.0",  # Model explainability
+    
+    # Deep Learning (compatible with foundation models)
+    "torch>=2.0.0,<2.6.0",  # Avoid 2.8.0 conflicts with foundation models
+    "torchvision>=0.15.0,<0.20.0",
+    "torchaudio>=2.0.0,<2.6.0",
+    "transformers>=4.40.0,<5.0.0",
+    "bitsandbytes>=0.42.0",  # 4-bit quantization for large LLMs
+    "accelerate>=0.25.0",  # Required for device_map and quantization
+    "sentencepiece",
+    "lm-format-enforcer",
+    
+    # Data handling
+    "datasets>=2.16.0,<3.0.0",
+    "h5py",
+    
+    # Web framework
+    "flask>=2.1.0,<3.0.0",
+    "gunicorn>=20.0.0,<22.0.0",
+    "Werkzeug>=2.0.0,<4.0.0",
+    
+    # AWS services
+    "boto3>=1.26.0,<2.0.0",
+    "sagemaker>=2.150.0,<3.0.0",
+    
+    # Time Series Forecasting Models
+    "gluonts[torch]>=0.14.4",
+    "statsmodels",
+    "nixtla",
+    "openai",
+    "huggingface_hub",
+    "causalchamber==0.1.1",
+    
+    # Utilities
+    "requests>=2.31.0",
+    "matplotlib>=3.5.0,<4.0.0",
+    "ipykernel>=6.0.0",  # For Jupyter notebook support
+    "pympler>=1.0.0",  # Memory profiling
+    "deepdiff>=6.0.0",  # Object comparison
+    "termcolor",
+    "tenacity",
+    "gradio"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-timeout>=2.1.0",
+    "pytest-xdist>=3.0.0",
+    "black>=22.0.0",
+    "isort>=5.10.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=2.20.0",
+    "factory-boy>=3.2.0",
+    "faker>=18.0.0",
+]
+# Time series foundation models (install separately via pip)
+timeseries-models = [
+    # Install these models directly from Git:
+    # pip install git+https://github.com/ServiceNow/TACTiS.git@tactis-2
+    # pip install git+https://github.com/time-series-foundation-models/lag-llama.git@main
+    # pip install git+https://github.com/aldro61/llm_processes.git@master
+    # pip install git+https://github.com/amazon-science/chronos-forecasting.git@main
+    # pip install "uni2ts[notebook] @ git+https://github.com/SalesforceAIResearch/uni2ts.git"
+    # pip install git+https://github.com/AndrewRWilliams/TimeLLMBaseline.git
+    # pip install git+https://github.com/AndrewRWilliams/UniTimeBaseline.git
+]
+docker = [
+    "Werkzeug>=2.0.0",
+]
+notebook = [
+    "jupyter>=1.0.0",
+    "jupyterlab>=4.0.0",
+    "ipykernel>=6.0.0",
+    "notebook>=6.4.0",
+    "ipywidgets>=8.0.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.0.0",
+]
+# PyTorch variants (compatible with foundation models)
+pytorch-cpu = [
+    "torch>=2.0.0,<2.6.0",
+    "torchvision>=0.15.0,<0.20.0", 
+    "torchaudio>=2.0.0,<2.6.0",
+]
+pytorch-cuda = [
+    "torch>=2.0.0,<2.6.0",
+    "torchvision>=0.15.0,<0.20.0",
+    "torchaudio>=2.0.0,<2.6.0",
+    # Note: CUDA index URL handled by setup script
+]
+pytorch-mps = [
+    "torch>=2.0.0,<2.6.0",
+    "torchvision>=0.15.0,<0.20.0",
+    "torchaudio>=2.0.0,<2.6.0",
+    # Note: MPS support built into standard PyTorch on Apple Silicon
+]
+
+[project.urls]
+Homepage = "https://github.com/EventGlucose/EventGlucoseBench"
+Repository = "https://github.com/EventGlucose/EventGlucoseBench"
+"Bug Tracker" = "https://github.com/EventGlucose/EventGlucoseBench/issues"
+
+[project.scripts]
+# Remote storage sync utility (works with S3, Google Drive via rclone)
+eglu-remote-sync = "scripts.remote_sync:main"
+hai-remote-sync = "scripts.remote_sync:main"  # Legacy alias
+
+# Experiment runners
+eglu-run = "scripts.run_baselines:main"  # Run baseline experiments from JSON specs
+eglu-run-individual = "scripts.run_individual:main"  # Run individual task/method experiments
+
+# Result compilation and analysis
+eglu-compile-results = "scripts.compile_stderr_results:main"  # Compile stderr results 
+
+[tool.setuptools]
+packages = [ "scripts", "eventglucose",]
+
+[tool.setuptools.package-dir]
+"" = "code"
+
+[tool.setuptools.package-data]
+"benchmark.data.dominicks" = ["*.json"]
+
+[tool.setuptools_scm]
+write_to = "code/_version.py"
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["eventglucose",  "scripts"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "-ra",
+    "--strict-markers", 
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+    "--durations=10"
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: Fast unit tests that don't require external dependencies",
+    "integration: Integration tests that may require Docker/AWS", 
+    "slow: Slow tests that take more than 30 seconds",
+    "docker: Tests that require Docker to be running",
+    "aws: Tests that require AWS credentials",
+    "s3: Tests that require S3 bucket access",
+    "data_prep: Data preparation tests that download from S3",
+    "gpu: Tests that require GPU access",
+    "ml: Machine learning model tests",
+    "pipeline: Data pipeline tests",
+    "healthcare: Tests with healthcare-specific logic"
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning:transformers.*",
+    "ignore::FutureWarning:pandas.*"
+]
+
+[tool.coverage.run]
+source = ["code"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "datasets.*",
+    "transformers.*",
+    "xgboost.*", 
+    "lightgbm.*",
+    "optuna.*",
+    "pympler.*",
+]
+ignore_missing_imports = true

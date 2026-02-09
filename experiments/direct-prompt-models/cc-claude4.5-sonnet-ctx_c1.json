@@ -1,0 +1,3 @@
+[
+    {"label": "CC-Claude-4.5-Sonnet", "method": "directprompt", "llm": "claude-4.5-sonnet", "use_context": true}
+]

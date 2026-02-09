@@ -1,0 +1,133 @@
+import ast
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from typing import Optional, Dict, Tuple, List
+
+from ..config import DATA_STORAGE_PATH
+from ..base import UnivariateCRPSTask
+from . import WeightCluster
+
+from .eventglucose_tasks import EventCGMTask_withEvent_withLag
+from ..config import DATA_LTS_FOLDER
+
+
+
+class EventCGMTask_D1_Age18_Exercise_Ontime_NoCtx(EventCGMTask_withEvent_withLag):
+
+    __version__ = "0.2.0"
+
+    def get_task_config(self) -> Dict:
+        return {
+            "data_lts_folder": DATA_LTS_FOLDER,
+            "eventtype": ["Exercise5Min"],
+            "subgroup": ["D1-Age18"],
+            "lag": 0,
+            "context_length": 289,
+            "prediction_length": 24,
+            "use_calendar_covs": False,
+            "prompt_level": "noctx",  # No context - time series only
+            "prompt_max_digits": 1,
+        }
+
+
+class EventCGMTask_D1_Age40_Exercise_Ontime_NoCtx(EventCGMTask_withEvent_withLag):
+
+    __version__ = "0.2.0"
+
+    def get_task_config(self) -> Dict:
+        return {
+            "data_lts_folder": DATA_LTS_FOLDER,
+            "eventtype": ["Exercise5Min"],
+            "subgroup": ["D1-Age40"],
+            "lag": 0,
+            "context_length": 289,
+            "prediction_length": 24,
+            "use_calendar_covs": False,
+            "prompt_level": "noctx",  # No context - time series only
+            "prompt_max_digits": 1,
+        }   
+
+
+class EventCGMTask_D1_Age65_Exercise_Ontime_NoCtx(EventCGMTask_withEvent_withLag):  
+
+    __version__ = "0.2.0"
+
+    def get_task_config(self) -> Dict:
+        return {
+            "data_lts_folder": DATA_LTS_FOLDER,
+            "eventtype": ["Exercise5Min"],
+            "subgroup": ["D1-Age65"],
+            "lag": 0,
+            "context_length": 289,
+            "prediction_length": 24,
+            "use_calendar_covs": False,
+            "prompt_level": "noctx",  # No context - time series only
+            "prompt_max_digits": 1,
+        }           
+
+
+class EventCGMTask_D2_Age18_Exercise_Ontime_NoCtx(EventCGMTask_withEvent_withLag):
+    __version__ = "0.2.0"
+
+    def get_task_config(self) -> Dict:
+        return {
+            "data_lts_folder": DATA_LTS_FOLDER,
+            "eventtype": ["Exercise5Min"],
+            "subgroup": ["D2-Age18"],
+            "lag": 0,
+            "context_length": 289,
+            "prediction_length": 24,
+            "use_calendar_covs": False,
+            "prompt_level": "noctx",  # No context - time series only
+            "prompt_max_digits": 1,
+        }
+
+
+class EventCGMTask_D2_Age40_Exercise_Ontime_NoCtx(EventCGMTask_withEvent_withLag):
+    __version__ = "0.2.0"
+
+    def get_task_config(self) -> Dict:
+        return {
+            "data_lts_folder": DATA_LTS_FOLDER,
+            "eventtype": ["Exercise5Min"],
+            "subgroup": ["D2-Age40"],
+            "lag": 0,
+            "context_length": 289,
+            "prediction_length": 24,
+            "use_calendar_covs": False,
+            "prompt_level": "noctx",  # No context - time series only
+            "prompt_max_digits": 1,
+        }
+
+
+class EventCGMTask_D2_Age65_Exercise_Ontime_NoCtx(EventCGMTask_withEvent_withLag):
+    __version__ = "0.2.0"
+
+    def get_task_config(self) -> Dict:
+        return {
+            "data_lts_folder": DATA_LTS_FOLDER,
+            "eventtype": ["Exercise5Min"],
+            "subgroup": ["D2-Age65"],
+            "lag": 0,
+            "context_length": 289,
+            "prediction_length": 24,
+            "use_calendar_covs": False,
+            "prompt_level": "noctx",  # No context - time series only
+            "prompt_max_digits": 1,
+        }
+
+
+
+# ============================================================================
+# Cluster Registry
+# ============================================================================
+
+__cluster__ = [
+    EventCGMTask_D1_Age18_Exercise_Ontime_NoCtx,
+    EventCGMTask_D1_Age40_Exercise_Ontime_NoCtx,
+    EventCGMTask_D1_Age65_Exercise_Ontime_NoCtx,
+    EventCGMTask_D2_Age18_Exercise_Ontime_NoCtx,
+    EventCGMTask_D2_Age40_Exercise_Ontime_NoCtx,
+    EventCGMTask_D2_Age65_Exercise_Ontime_NoCtx,
+]
