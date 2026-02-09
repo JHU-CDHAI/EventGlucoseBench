@@ -130,30 +130,6 @@ experiments/
 └── statistical-models/   # Classical forecasting methods
 ```
 
-## 🔧 CLI Tools
-
-### Run Experiments
-```bash
-# Run baseline experiments from JSON specs
-eglu-run --exp-spec experiments/glucose_comprehensive.json
-
-# Run specific task/method combination
-eglu-run-individual --task glucose_cgm_5min --method chronos --n-samples 50
-
-# Skip missing cache entries
-eglu-run --exp-spec experiments/glucose_comprehensive.json --skip-cache-miss
-```
-
-
-
-## 📈 Evaluation
-
-The framework uses:
-- **CRPS (Continuous Ranked Probability Score)**: Primary probabilistic metric
-- **Caching system**: HDF5-based prediction cache to avoid recomputation
-- **Parallel processing**: Configurable workers for batch evaluation
-- **Result compilation**: Automatic aggregation across tasks and seeds
-
 ## 📦 Dependencies
 
 ### Core Requirements
@@ -178,7 +154,7 @@ Apache-2.0 License
 
 
 
-## 📝 Citation
+<!-- ## 📝 Citation
 
 If you use this benchmark in your research, please cite:
 
@@ -189,7 +165,7 @@ If you use this benchmark in your research, please cite:
   journal={arXiv preprint},
   year={2026}
 }
-```
+``` -->
 
 ---
 
