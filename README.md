@@ -143,9 +143,9 @@ experiments/
 - rclone (for data synchronization)
 - CUDA (for GPU acceleration)
 
-## 📄 License
+<!-- ## 📄 License
 
-Apache-2.0 License
+Apache-2.0 License -->
 
 ## 📧 Contact
 
