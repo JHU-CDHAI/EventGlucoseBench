@@ -617,7 +617,6 @@ if __name__ == "__main__":
     print("from visualize_glucose_events import visualize_glucose_with_events, visualize_multiple_series, plot_event_distribution")
     print("")
     print("# Load your data")
-    print("data_folder = '/home/xzhi2/WellDoc/WellDoc-SPACE/_Data/8-Data_LTS/WellDoc2025LLY_1n3'")
     print("df = pd.read_pickle(f'{data_folder}/df_lts.pkl')")
     print("")
     print("# Visualize a single series with events")
