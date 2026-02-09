@@ -1,0 +1,608 @@
+##############################################
+model_inference_results: results
+python_env: .venv
+
+auto_convert_to_notebook: true
+
+vscode_settings_path: .vscode/settings.json
+evalfn_path: evaluation/evalfn
+evaluation_results_folder: evaluation/results
+convert_to_notebooks_script: evaluation/notebooks/convert_to_notebooks.py
+##############################################
+
+################################################################################
+MainMetrics: "ct_crps" #  glucose_rcrps  # CRPS, Glucose-RCRPS, MAE, rMSE # <--
+MetricsList:
+  [
+    "crps",
+    "t_crps",
+    "c_crps",
+    "ct_crps",
+    "mae",
+    "rmse",
+    "clarke_ab",
+    "clarke_cde",
+  ]
+FigurePath: "0-display/Figure"
+TablePath: "0-display/Table"
+AppendixFigurePath: "0-display/AppendixFigure"
+AppendixTablePath: "0-display/AppendixTable"
+
+################################################################################
+# Task Display Settings - controls how task names appear in figures/tables
+################################################################################
+task_display:
+  # Context level display names (internal -> paper label)
+  # Must match parse_task_context() output in shared_config.py
+  context_display_names:
+    Base: "Base"
+    NoCtx: "NoCtx"
+    Profile: "ProfileOnly"
+    BasicEventInfo: "BasicEventInfo"
+    StandardEventInfo: "StandardEventInfo"
+    DetailedEventInfo: "DetailedEventInfo"
+
+  # Context levels to exclude from display (figures/tables)
+  display_exclude_contexts:
+    - Base
+
+################################################################################
+
+0-convert-Result-to-model-task-instance-score:
+  # Override input root for this script only (optional)
+  # model_inference_results: /custom/path/_WorkSpace/Result
+
+  # Output directory for this script (optional, relative to repo root or absolute)
+  # output_dir: evaluation/results/0-convert-Result-to-model-task-instance-score
+
+  # Clinical CRPS glucose range
+  low_mgdl: 70.0
+  high_mgdl: 180.0
+
+  # Toggle expensive Glucose-RCRPS computation
+  compute_glucose_rcrps: false
+  seeds: [] # e.g., [0, 1, 2]
+
+  # Per-script notebook conversion control (overrides global)
+  convert_to_notebook: true
+  # convert_to_notebooks_script: 0--evaluation/notebooks/convert_to_notebooks.py
+
+1-describe-model-result-data-quality:
+  # Group configuration with display metadata
+  include_models:
+    llm-series:
+      display_name: "LLM"
+      color: "#1f77b4" # Blue
+      order: 1
+      include_models:
+        - openrouter-claude-3.5-haiku-context
+        - openrouter-claude-3.5-haiku-nocontext
+        - claude-sdk-haiku-4.5-context
+        - claude-sdk-haiku-4.5-nocontext
+        - claude-sdk-sonnet-4.5-context
+        - claude-sdk-sonnet-4.5-nocontext
+        - gpt-4o-context
+        - gpt-4o-mini-context
+        - gpt-4o-mini-nocontext
+        - gpt-4o-nocontext
+        - gpt-5-mini-context
+        - gpt-5-mini-nocontext
+        - openrouter-gemini-2.5-flash-context
+        - openrouter-gemini-2.5-flash-nocontext
+        - openrouter-llama-3-70b-instruct-context
+        - openrouter-llama-3-70b-instruct-nocontext
+        - openrouter-llama-3-8b-instruct-context
+        - openrouter-llama-3-8b-instruct-nocontext
+        - openrouter-qwen3-235b-a22b-instruct-context
+        - openrouter-qwen3-235b-a22b-instruct-nocontext
+      exclude_models:
+        - llmp-llama-3-8B-context
+        - llmp-llama-3-8B-instruct-context
+        - llmp-llama-3-8B-instruct-nocontext
+        - llmp-llama-3-8B-nocontext
+        - llmp-qwen2.5-0.5B-Instruct-context
+        - llmp-qwen2.5-0.5B-Instruct-nocontext
+        - llmp-qwen2.5-7B-Instruct-context
+        - llmp-qwen2.5-7B-Instruct-nocontext
+        - openrouter-mixtral-8x7b-instruct-context
+        - openrouter-mixtral-8x7b-instruct-nocontext
+
+    multi-modality-ts:
+      display_name: "Multimodal"
+      color: "#9467bd" # Purple
+      order: 2
+      include_models:
+        - timellm-etth1-context-pred96
+        - timellm-etth1-nocontext-pred96
+        - unitime-etth1-context-pred96
+        - unitime-etth1-nocontext-pred96
+
+    time-series-foundation:
+      display_name: "Foundation"
+      color: "#ff7f0e" # Orange
+      order: 3
+      include_models:
+        - chronos-large
+        - moirai-large
+        - lag-llama
+      exclude_models:
+        - chronos-base
+        - chronos-mini
+        - chronos-small
+        - chronos-tiny
+        - moirai-base
+        - moirai-small
+
+    statistical-baselines:
+      display_name: "Baseline"
+      color: "#2ca02c" # Green
+      order: 4
+      include_models:
+        - r-arima
+        - r-ets
+        - exp-smoothing
+      exclude_models:
+        - random
+        - oracle
+
+  exclude_tasks:
+    - EventCGMTask_Base
+
+  seeds: []
+
+2-generate-Table1-and-Table2:
+  # Table 1: Main results following CiK format
+  # - LLM/Multimodal: show -context variants (WITH context)
+  # - TS Foundation/Statistical: show base variants (marked with *, NO context)
+  # Table 2: Context ablation study
+  # - Only context-aware models (LLMs and Multimodal with both variants)
+
+  # Exclude smaller TS Foundation variants (applied to both tables)
+  exclude_models:
+    - chronos-base
+    - chronos-small
+    - chronos-mini
+    - chronos-tiny
+    - moirai-base
+    - moirai-small
+    # Mixtral models (excluded from main analysis)
+    - openrouter-mixtral-8x7b-instruct-context
+    - openrouter-mixtral-8x7b-instruct-nocontext
+    # Multimodal TS without -etth1- (incomplete data, use -etth1- versions instead)
+    - timellm-context-pred96
+    - unitime-context-pred96
+    # LLM Process models (separate category, not direct prompt LLMs)
+    - llmp-llama-3-8B-context
+    - llmp-llama-3-8B-nocontext
+    - llmp-llama-3-8B-instruct-context
+    - llmp-llama-3-8B-instruct-nocontext
+    - llmp-qwen2.5-0.5B-Instruct-context
+    - llmp-qwen2.5-0.5B-Instruct-nocontext
+    - llmp-qwen2.5-7B-Instruct-context
+    - llmp-qwen2.5-7B-Instruct-nocontext
+
+  # Output directory override (optional, defaults to evaluation_results_folder/2-generate-Table1-and-Table2)
+  # output_dir: custom/path/to/output
+
+  # Per-script notebook conversion control (overrides global)
+  convert_to_notebook: true
+
+  # Additional filters (optional)
+  # seeds: [0, 1, 2]  # Limit to specific seeds
+
+3-R1-llm-vs-baselines-by-context-FigureR1:
+  # Reuse the same model lists from 1-describe-model-result-data-quality
+  # (Will inherit from that section)
+
+  # Quantitative baseline models (cannot process context)
+  quantitative_baselines:
+    - chronos-large
+    - moirai-large
+    - lag-llama
+    - r-arima
+    - r-ets
+    - exp-smoothing
+
+  # Context levels to analyze
+  context_levels:
+    - NoCtx
+    - Profile
+    - BasicEventInfo
+    - StandardEventInfo
+    - DetailedEventInfo
+
+  # Metrics to analyze
+  metrics:
+    - crps
+    - t_crps
+    - ct_crps
+    - rmse
+    - clarke_ab
+
+  # Bucket colors for performance visualization
+  bucket_colors:
+    "Beats all": "#4e79a7" # Blue - beats all 6
+    "Beats 5": "#59a14f" # Green - beats 5
+    "Beats 3 or 4": "#f28e2c" # Orange - beats 3-4
+    "Beats 1 or 2": "#e15759" # Red - beats 1-2
+    "Beats none": "#b07aa1" # Purple - beats none
+
+  # Figure settings
+  figure_size: [14, 7] # Width, height in inches
+  font_sizes:
+    title: 16
+    axis_label: 14
+    tick_label: 12
+    legend: 16
+
+3-R2-llm-with-without-context-FigureR2:
+  # Inherits model lists from 1-describe-model-result-data-quality
+
+  # Excluded models (baselines and specific multimodal)
+  excluded_models:
+    - chronos-large
+    - chronos-base
+    - chronos-small
+    - chronos-mini
+    - chronos-tiny
+    - lag-llama
+    - moirai-large
+    - moirai-base
+    - moirai-small
+    - r-arima
+    - r-ets
+    - exp-smoothing
+    - unitime-etth1-pred96
+    - timellm-etth1-pred96
+
+  # Context levels to analyze
+  context_levels:
+    - NoCtx
+    - Profile
+    - BasicEventInfo
+    - StandardEventInfo
+    - DetailedEventInfo
+
+  # Metrics to analyze
+  metrics:
+    - crps
+    - ct_crps
+    - rmse
+    - clarke_ab
+    - mae
+    - clarke_cde
+
+  # Figure settings
+  figure_size: [14, 7] # Width, height in inches
+  font_sizes:
+    title: 16
+    axis_label: 13
+    tick_label: 20
+    legend: 16
+
+3-R3-Parameter-Performance-FigureR3:
+  # Inherits models from 1-describe-model-result-data-quality
+
+  # Parameter counts for models
+  parameter_counts:
+    "llama-3.1-405b-instruct": 405e9
+    "llama-3-70b-instruct": 70e9
+    "llama-3-8b-instruct": 8e9
+    "mixtral-8x7b-instruct": 46.7e9
+    "qwen2.5-7B-Instruct": 7e9
+    "qwen2.5-0.5B-Instruct": 0.5e9
+    "gpt-4o": 200e9
+    "gpt-4o-mini": 8e9
+    "gpt-5-mini": 8e9
+    "sonnet-4.5": 175e9
+    "haiku-4.5": 40e9
+    "claude-3.5-haiku": 25e9
+    "gemini-2.5-flash": 27e9
+    "qwen3-235b-a22b-instruct": 235e9
+    "timellm-etth1-pred96": 7e9
+    "unitime-etth1-pred96": 7e9
+    "chronos-tiny": 8e6
+    "chronos-mini": 20e6
+    "chronos-small": 60e6
+    "chronos-base": 220e6
+    "chronos-large": 770e6
+    "moirai-small": 50e6
+    "moirai-base": 200e6
+    "moirai-large": 500e6
+    "lag-llama": 300e6
+    "r-ets": 10
+    "r-arima": 5
+    "exp-smoothing": 3
+    "oracle": 1.0
+    "random": 1.0
+
+  # Figure settings
+  figure_size: [10, 8] # Width x Height
+  font_sizes:
+    title: 14
+    axis_label: 12
+    tick_label: 10
+    legend: 10
+
+3-R4-instance-group-analysis-FigureR4:
+  # Inherits models from 1-describe-model-result-data-quality
+
+  # Figure settings
+  figure_size: [9.5, 9]
+  font_sizes:
+    title: 18
+    axis_label: 32
+    tick_label: 32
+    legend: 32
+
+  # KDE configuration for contour plots
+  kde_configs:
+    R4a:
+      bw_factor: 1.6
+      levels: [0.1]
+      alpha: 0.3
+    R4a2:
+      bw_factor: 1.6
+      levels: [0.1]
+      alpha: 0.3
+    R4b:
+      bw_factor: 1.6
+      levels: [0.1]
+      alpha: 0.3
+    R4c:
+      bw_factor: 1.6
+      levels: [0.1]
+      alpha: 0.3
+    R4d:
+      bw_factor: 1.6
+      levels: [0.1]
+      alpha: 0.3
+
+4-appendixC-results:
+  # Default figure style (applied to all C-figures unless overridden per-figure)
+  defaults:
+    figure_size: [14, 10]
+    base_font_size: 10
+    font_sizes:
+      title: 14
+      axis_label: 16
+      tick_label: 12
+      legend: 10
+      annotation: 8
+
+  # Per-figure overrides (only specify values that differ from defaults)
+  figures:
+    C1: # Model-task heatmap
+      figure_size: [18, 14]
+      font_sizes:
+        title: 20
+        x_tick_label: 12
+        y_tick_label: 10
+    C2: # Metric correlation heatmap
+      figure_size: [10, 8]
+    C3: # Violin plot by model
+      figure_size: [16, 10]
+      font_sizes:
+        title: 18
+        axis_label: 18
+        legend: 18
+    C4: # Distribution by model family
+      figure_size: [12, 8]
+      font_sizes:
+        title: 20
+        axis_label: 18
+        tick_label: 18
+    C5: # Model ranking bar chart
+      figure_size: [14, 10]
+      font_sizes:
+        axis_label: 12
+        tick_label: 9
+        legend: 9
+    C6: # Rank consistency heatmap
+      figure_size: [18, 14]
+      font_sizes:
+        x_tick_label: 8
+        y_tick_label: 7
+    C7: # Pairplot of metrics
+      pairplot_height: 2.5
+    C8: # Metric vs standard CRPS scatter
+      figure_size: [9, 9]
+      font_sizes:
+        legend: 15
+    C9: # Task difficulty bar chart
+      figure_size: [14, 8]
+    C9b: # Subgroup difficulty overview
+      figure_size: [10, 6]
+    C10: # Box plot by model family
+      figure_size: [14, 8]
+    C11: # Performance by context level
+      figure_size: [12, 8]
+      font_sizes:
+        axis_label: 18
+        x_tick_label: 14
+    C12: # Context level by model family heatmap
+      figure_size: [12, 6]
+
+6-data-source-statistics:
+  # Path to EventGlucose task data files (.pkl)
+  # task_data_dir: path/to/task/data
+
+################################################################################
+# Model Display Names - Professional naming for tables and figures
+################################################################################
+model_display_names:
+  # Direct Prompt LLMs
+  gpt-5-mini: "GPT-5-mini"
+  gpt-4o: "GPT-4o"
+  gpt-4o-mini: "GPT-4o-mini"
+
+  claude-sdk-sonnet-4.5: "Claude-Sonnet-4.5"
+  claude-sdk-haiku-4.5: "Claude-Haiku-4.5"
+  openrouter-claude-3.5-haiku: "Claude-3.5-Haiku"
+
+  openrouter-llama-3.1-405b-instruct: "Llama-3.1-405B-Inst"
+  openrouter-llama-3-70b-instruct: "Llama-3-70B-Inst"
+  openrouter-llama-3-8b-instruct: "Llama-3-8B-Inst"
+
+  openrouter-mixtral-8x7b-instruct: "Mixtral-8x7B-Inst"
+
+  openrouter-qwen3-235b-a22b-instruct: "Qwen-3-235B-Inst"
+
+  openrouter-gemini-2.5-flash: "Gemini-2.5-Flash"
+
+  # LLMP Models
+  llmp-llama-3-8B: "Llama-3-8B"
+  llmp-llama-3-8B-instruct: "Llama-3-8B-Inst"
+  llmp-mixtral-8x7b: "Mixtral-8x7B"
+  llmp-mixtral-8x7b-instruct: "Mixtral-8x7B-Inst"
+  llmp-qwen2.5-7B-Instruct: "Qwen-2.5-7B-Inst"
+  llmp-qwen2.5-7B: "Qwen-2.5-7B"
+  llmp-qwen2.5-0.5B-Instruct: "Qwen-2.5-0.5B-Inst"
+  llmp-qwen2.5-0.5B: "Qwen-2.5-0.5B"
+
+  # Multimodal TS
+  unitime-etth1-pred96: "UniTime (ETTh1)"
+  timellm-etth1-pred96: "Time-LLM (ETTh1)"
+
+  # TS Foundation
+  chronos-large: "Chronos-Large"
+  chronos-base: "Chronos-Base"
+  chronos-small: "Chronos-Small"
+  chronos-mini: "Chronos-Mini"
+  chronos-tiny: "Chronos-Tiny"
+
+  moirai-large: "Moirai-Large"
+  moirai-base: "Moirai-Base"
+  moirai-small: "Moirai-Small"
+
+  lag-llama: "Lag-Llama"
+
+  timegen1: "TimeGEN"
+
+  # Statistical Baselines
+  r-arima: "ARIMA"
+  r-ets: "ETS"
+  exp-smoothing: "Exp-Smoothing"
+
+  # Other
+  oracle: "Oracle"
+  random: "Random"
+# # Models and tasks to exclude from analysis
+# exclude_models:
+#   - random
+#   - oracle
+#   - llmp-llama-3-8B-context
+#   - llmp-llama-3-8B-instruct-context
+#   - llmp-llama-3-8B-instruct-nocontext
+#   - llmp-llama-3-8B-nocontext
+#   - llmp-qwen2.5-0.5B-Instruct-context
+#   - llmp-qwen2.5-0.5B-Instruct-nocontext
+#   - llmp-qwen2.5-7B-Instruct-context
+#   - llmp-qwen2.5-7B-Instruct-nocontext
+#   - chronos-base
+#   - chronos-mini
+#   - chronos-small
+#   - chronos-tiny
+#   - moirai-base
+#   - moirai-small
+
+# # exclude_tasks:
+# #   - EventCGMTask_Base
+
+# # Color palettes used across figures
+# colors:
+#   model_class:
+#     "Statistical": "#9467bd"
+#     "TS Foundation": "#d62728"
+#     "Multimodal TS": "#2ca02c"
+#     "Direct Prompt LLM": "#1f77b4"
+#     "Direct Prompt LLM (Small)": "#aec7e8"
+#     "LLM Process": "#ff7f0e"
+#     "Baseline": "#7f7f7f"
+#     "Other": "#bcbd22"
+
+#   quant_vs_llm:
+#     "Quantitative": "#d62728"
+#     "LLM-based": "#1f77b4"
+#     "Hybrid": "#2ca02c"
+
+#   subgroup:
+#     "D1_Age18": "#1f77b4"
+#     "D1_Age40": "#2ca02c"
+#     "D1_Age65": "#d62728"
+#     "D2_Age18": "#9467bd"
+#     "D2_Age40": "#ff7f0e"
+#     "D2_Age65": "#8c564b"
+#     "Base": "#7f7f7f"
+
+#   event_type:
+#     "Diet": "#ff7f0e"
+#     "Exercise": "#2ca02c"
+#     "Base": "#7f7f7f"
+
+#   context:
+#     "Context": "#2ca02c"
+#     "No Context": "#d62728"
+#     "N/A": "#7f7f7f"
+
+# # Human-friendly display names for models
+# model_display_names:
+#   chronos-base: "Chronos (base)"
+#   chronos-large: "Chronos (large)"
+#   chronos-mini: "Chronos (mini)"
+#   chronos-small: "Chronos (small)"
+#   chronos-tiny: "Chronos (tiny)"
+#   lag-llama: "Lag-Llama"
+#   moirai-base: "Moirai (base)"
+#   moirai-large: "Moirai (large)"
+#   moirai-small: "Moirai (small)"
+
+#   exp-smoothing: "Exp-Smoothing"
+#   r-arima: "Arima"
+#   r-ets: "ETS"
+
+#   timellm-etth1-context-pred96: "TimeLLM-ctx"
+#   timellm-etth1-nocontext-pred96: "TimeLLM-noctx"
+#   unitime-etth1-context-pred96: "UniTime-ctx"
+#   unitime-etth1-nocontext-pred96: "UniTime-noctx"
+
+#   claude-sdk-haiku-4.5-context: "Claude-Haiku4.5-ctx"
+#   claude-sdk-haiku-4.5-nocontext: "Claude-Haiku4.5-noctx"
+#   claude-sdk-sonnet-4.5-context: "Claude-Sonnet4.5-ctx"
+#   claude-sdk-sonnet-4.5-nocontext: "Claude-Sonnet4.5-noctx"
+#   openrouter-claude-3.5-haiku-context: "Claude-Haiku3.5-ctx"
+#   openrouter-claude-3.5-haiku-nocontext: "Claude-Haiku3.5-noctx"
+
+#   gpt-4o-context: "GPT-4o-ctx"
+#   gpt-4o-nocontext: "GPT-4o-noctx"
+#   gpt-4o-mini-context: "GPT-4o-mini-ctx"
+#   gpt-4o-mini-nocontext: "GPT-4o-mini-noctx"
+#   gpt-5-mini-context: "GPT-5-mini-ctx"
+#   gpt-5-mini-nocontext: "GPT-5-mini-noctx"
+
+#   openrouter-gemini-2.5-flash-context: "Gemini-2.5-flash-ctx"
+#   openrouter-gemini-2.5-flash-nocontext: "Gemini-2.5-flash-noctx"
+
+#   openrouter-llama-3-70b-instruct-context: "Llama-3.1-70B-Instr-ctx"
+#   openrouter-llama-3-70b-instruct-nocontext: "Llama-3.1-70B-Instr-noctx"
+#   openrouter-llama-3-8b-instruct-context: "Llama-3.8B-Instr-ctx"
+#   openrouter-llama-3-8b-instruct-nocontext: "Llama-3.8B-Instr-noctx"
+
+#   openrouter-mixtral-8x7b-instruct-context: "Mixtral-8x7B-Instr-ctx"
+#   openrouter-mixtral-8x7b-instruct-nocontext: "Mixtral-8x7B-Instr-noctx"
+
+#   openrouter-qwen3-235b-a22b-instruct-context: "Qwen3-235b-a22b-Instr-ctx"
+#   openrouter-qwen3-235b-a22b-instruct-nocontext: "Qwen3-235b-a22b-Instr-noctx"
+
+#   llmp-llama-3-8B-context: "Llama-3-8B-ctx"
+#   llmp-llama-3-8B-nocontext: "Llama-3-8B-noctx"
+#   llmp-llama-3-8B-instruct-context: "Llama-3-8B-Instr-ctx"
+#   llmp-llama-3-8B-instruct-nocontext: "Llama-3-8B-Instr-noctx"
+#   llmp-qwen2.5-0.5B-Instruct-context: "Qwen2.5-0.5B-Instr-ctx"
+#   llmp-qwen2.5-0.5B-Instruct-nocontext: "Qwen2.5-0.5B-Instr-noctx"
+#   llmp-qwen2.5-7B-Instruct-context: "Qwen2.5-7B-Instr-ctx"
+#   llmp-qwen2.5-7B-Instruct-nocontext: "Qwen2.5-7B-Instr-noctx"
+
+#   oracle: "Oracle"
+#   random: "Random"
+
