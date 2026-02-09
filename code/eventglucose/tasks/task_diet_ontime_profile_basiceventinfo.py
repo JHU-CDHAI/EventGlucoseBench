@@ -14,12 +14,12 @@ from ..config import DATA_LTS_FOLDER
 
 
 ############################################################
-# Detailed Event Level: Profile + complete event details
+# Basic Event Info Level: Profile + event timing information
 ############################################################
 
 
 
-class EventCGMTask_D1_Age18_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age18_Diet_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
 
     __version__ = "0.2.0"
 
@@ -32,12 +32,12 @@ class EventCGMTask_D1_Age18_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'detailed_event',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D1_Age40_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age40_Diet_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
 
     __version__ = "0.2.0"
 
@@ -50,12 +50,12 @@ class EventCGMTask_D1_Age40_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'detailed_event',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }   
 
 
-class EventCGMTask_D1_Age65_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_withLag):  
+class EventCGMTask_D1_Age65_Diet_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):  
 
     __version__ = "0.2.0"
 
@@ -68,12 +68,12 @@ class EventCGMTask_D1_Age65_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'detailed_event',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }           
 
 
-class EventCGMTask_D2_Age18_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D2_Age18_Diet_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
     __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
@@ -85,12 +85,12 @@ class EventCGMTask_D2_Age18_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'detailed_event',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D2_Age40_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D2_Age40_Diet_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
     __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
@@ -102,12 +102,12 @@ class EventCGMTask_D2_Age40_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'detailed_event',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D2_Age65_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D2_Age65_Diet_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
     __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
@@ -119,7 +119,7 @@ class EventCGMTask_D2_Age65_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'detailed_event',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
@@ -130,10 +130,10 @@ class EventCGMTask_D2_Age65_Diet_Ontime_DetailedEvent(EventCGMTask_withEvent_wit
 # ============================================================================
 
 __cluster__ = [
-    EventCGMTask_D1_Age18_Diet_Ontime_DetailedEvent,
-    EventCGMTask_D1_Age40_Diet_Ontime_DetailedEvent,
-    EventCGMTask_D1_Age65_Diet_Ontime_DetailedEvent,
-    EventCGMTask_D2_Age18_Diet_Ontime_DetailedEvent,
-    EventCGMTask_D2_Age40_Diet_Ontime_DetailedEvent,
-    EventCGMTask_D2_Age65_Diet_Ontime_DetailedEvent,
+    EventCGMTask_D1_Age18_Diet_Ontime_BasicEventInfo,
+    EventCGMTask_D1_Age40_Diet_Ontime_BasicEventInfo,
+    EventCGMTask_D1_Age65_Diet_Ontime_BasicEventInfo,
+    EventCGMTask_D2_Age18_Diet_Ontime_BasicEventInfo,
+    EventCGMTask_D2_Age40_Diet_Ontime_BasicEventInfo,
+    EventCGMTask_D2_Age65_Diet_Ontime_BasicEventInfo,
 ]

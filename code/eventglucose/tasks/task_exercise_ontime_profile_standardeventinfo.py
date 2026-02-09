@@ -14,12 +14,12 @@ from ..config import DATA_LTS_FOLDER
 
 
 ############################################################
-# New Detail Level: Profile + full event details with rounded values
+# Standard Event Info Level: Profile + event timing + key metrics
 ############################################################
 
 
 
-class EventCGMTask_D1_Age18_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age18_Exercise_Ontime_StandardEventInfo(EventCGMTask_withEvent_withLag):
 
     __version__ = "0.1.0"
 
@@ -32,12 +32,12 @@ class EventCGMTask_D1_Age18_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newdetail',
+            'prompt_level': 'standard_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D1_Age40_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age40_Exercise_Ontime_StandardEventInfo(EventCGMTask_withEvent_withLag):
 
     __version__ = "0.1.0"
 
@@ -50,12 +50,12 @@ class EventCGMTask_D1_Age40_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newdetail',
+            'prompt_level': 'standard_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D1_Age65_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age65_Exercise_Ontime_StandardEventInfo(EventCGMTask_withEvent_withLag):
 
     __version__ = "0.1.0"
 
@@ -68,12 +68,12 @@ class EventCGMTask_D1_Age65_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newdetail',
+            'prompt_level': 'standard_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D2_Age18_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D2_Age18_Exercise_Ontime_StandardEventInfo(EventCGMTask_withEvent_withLag):
     __version__ = "0.1.0"
 
     def get_task_config(self) -> Dict:
@@ -85,12 +85,12 @@ class EventCGMTask_D2_Age18_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newdetail',
+            'prompt_level': 'standard_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D2_Age40_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D2_Age40_Exercise_Ontime_StandardEventInfo(EventCGMTask_withEvent_withLag):
     __version__ = "0.1.0"
 
     def get_task_config(self) -> Dict:
@@ -102,12 +102,12 @@ class EventCGMTask_D2_Age40_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newdetail',
+            'prompt_level': 'standard_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D2_Age65_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D2_Age65_Exercise_Ontime_StandardEventInfo(EventCGMTask_withEvent_withLag):
     __version__ = "0.1.0"
 
     def get_task_config(self) -> Dict:
@@ -119,7 +119,7 @@ class EventCGMTask_D2_Age65_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_wit
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newdetail',
+            'prompt_level': 'standard_event_info',
             'prompt_max_digits': 1,
         }
 
@@ -130,10 +130,10 @@ class EventCGMTask_D2_Age65_Exercise_Ontime_NewDetail(EventCGMTask_withEvent_wit
 # ============================================================================
 
 __cluster__ = [
-    EventCGMTask_D1_Age18_Exercise_Ontime_NewDetail,
-    EventCGMTask_D1_Age40_Exercise_Ontime_NewDetail,
-    EventCGMTask_D1_Age65_Exercise_Ontime_NewDetail,
-    EventCGMTask_D2_Age18_Exercise_Ontime_NewDetail,
-    EventCGMTask_D2_Age40_Exercise_Ontime_NewDetail,
-    EventCGMTask_D2_Age65_Exercise_Ontime_NewDetail,
+    EventCGMTask_D1_Age18_Exercise_Ontime_StandardEventInfo,
+    EventCGMTask_D1_Age40_Exercise_Ontime_StandardEventInfo,
+    EventCGMTask_D1_Age65_Exercise_Ontime_StandardEventInfo,
+    EventCGMTask_D2_Age18_Exercise_Ontime_StandardEventInfo,
+    EventCGMTask_D2_Age40_Exercise_Ontime_StandardEventInfo,
+    EventCGMTask_D2_Age65_Exercise_Ontime_StandardEventInfo,
 ]

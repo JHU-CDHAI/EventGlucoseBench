@@ -129,3 +129,5 @@ learning/
 **.log
 **.out 
 **.synctex.gz 
+
+**.md

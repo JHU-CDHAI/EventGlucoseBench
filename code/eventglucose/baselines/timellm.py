@@ -18,25 +18,19 @@ import sys
 
 from huggingface_hub import hf_hub_download
 
-# Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Get the absolute path to the 'models' directory inside 'Time-LLM'
 time_llm_models_path = os.path.join(script_dir, "Time-LLM", "models")
 
-# Add 'models' directory to sys.path
 sys.path.append(time_llm_models_path)
 
 from timellm.models.TimeLLM import Model as TimeLLMModel
 
-# CLAUDE CODE MODIFICATION: Enhanced multi-GPU support and memory management
-# Check available GPUs and set up optimal device configuration
 if torch.cuda.is_available():
     num_gpus = torch.cuda.device_count()
     print(f"Found {num_gpus} GPUs available")
 
     if num_gpus >= 2:
-        # Use GPU 1 as primary to avoid conflicts, but prepare for multi-GPU usage
         primary_device = torch.device("cuda:1")
         available_gpus = list(range(num_gpus))
         print(f"Multi-GPU setup: Primary device cuda:1, Available GPUs: {available_gpus}")
@@ -51,24 +45,17 @@ else:
 
 torch_device = primary_device
 
-# CLAUDE CODE MODIFICATION: Clear GPU cache before initialization (fixed device parameter)
 if torch.cuda.is_available():
-    # torch.cuda.empty_cache() clears cache on all devices, no device parameter needed
     torch.cuda.empty_cache()
     print("Cleared GPU cache on all available devices")
 
-
 def truncate_mse_loss(future_time, future_pred):
-    # Assumes future_time.shape == (B, T1) and future_pred.shape == (B, T2)
     min_length = min(future_time.shape[-1], future_pred.shape[-1])
     return F.mse_loss(future_time[..., :min_length], future_pred[..., :min_length])
 
-
 def truncate_mae_loss(future_time, future_pred):
-    # Assumes future_time.shape == (B, T1) and future_pred.shape == (B, T2)
     min_length = min(future_time.shape[-1], future_pred.shape[-1])
     return F.l1_loss(future_time[..., :min_length], future_pred[..., :min_length])
-
 
 class DotDict(dict):
     """dot.notation access to dictionary attributes"""
@@ -76,7 +63,6 @@ class DotDict(dict):
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
-
 
 def find_pred_len_from_path(path: str) -> int:
     if "pl_96" or "pl96" in path:
@@ -94,7 +80,6 @@ def find_pred_len_from_path(path: str) -> int:
 
     return pred_len
 
-
 def find_model_name_from_path(path: str) -> str:
     path = path.lower()
     if "time-llm" in path or "timellm" in path:
@@ -107,7 +92,6 @@ def find_model_name_from_path(path: str) -> str:
         )
 
     return model_name
-
 
 TIME_LLM_CONFIGS = DotDict(
     {
@@ -131,7 +115,6 @@ TIME_LLM_CONFIGS = DotDict(
     }
 )
 
-
 class TimeLLMWrapper(nn.Module):
 
     def __init__(self, time_llm_model):
@@ -147,7 +130,6 @@ class TimeLLMWrapper(nn.Module):
         return self.base_model(
             x_enc=past_time.unsqueeze(-1), x_mark_enc=None, x_dec=None, x_mark_dec=None
         ).squeeze(-1)
-
 
 class WrappedBaseline(nn.Module):
 
@@ -168,7 +150,6 @@ class WrappedBaseline(nn.Module):
     def load_state_dict(self, state_dict, strict: bool = True, assign: bool = False):
         return self.base_model.load_state_dict(state_dict, strict, assign)
 
-
 class EvaluationPipeline:
 
     def __init__(
@@ -181,8 +162,6 @@ class EvaluationPipeline:
             metrics if metrics is not None else {"mse_loss": truncate_mse_loss}
         )
 
-        # CLAUDE CODE MODIFICATION: Respect the device passed from the main model
-        # Use provided device or fallback to default logic
         if device is not None:
             self.device = device
             print(f"EvaluationPipeline using provided device: {device}")
@@ -193,7 +172,6 @@ class EvaluationPipeline:
                     "Warning: No CUDA device detected, proceeding with EvaluationPipeline on CPU ....."
                 )
 
-        # Handle device transfer with proper error handling
         try:
             self.model = WrappedBaseline(model).to(self.device)
             print(f"✓ WrappedBaseline successfully moved to {self.device}")
@@ -203,7 +181,6 @@ class EvaluationPipeline:
             self.model = WrappedBaseline(model).to(self.device)
             print(f"✓ WrappedBaseline moved to CPU")
 
-    # TODO: This method needs to be replaced to handle actual CiK benchmark
     def get_evaluation_loader(self) -> Iterable:
         samples = []
         for sample in self.dataset.values():
@@ -249,11 +226,9 @@ class EvaluationPipeline:
         self.model.train()
         return losses, predictions
 
-
 class TimeLLMForecaster(Baseline):
 
-    __version__ = "0.0.8"  # Modification will trigger re-caching
-
+    __version__ = "0.0.8"
     def __init__(
         self,
         use_context,
@@ -271,26 +246,21 @@ class TimeLLMForecaster(Baseline):
         set_seed(self.seed)
         ckpt_filename = f"TimeLLM-{dataset}-pl_{pred_len}-ckpt.pth"
 
-        # Get the directory of the current script file
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Define the time-llm checkpoints directory
         ckpt_dir = os.path.join(script_dir, "Time-LLM", "checkpoints")
 
-        # Create the time-llm checkpoints directory if it doesn't exist
         os.makedirs(ckpt_dir, exist_ok=True)
 
-        # Path to the local checkpoint file
         ckpt_path = os.path.join(ckpt_dir, ckpt_filename)
 
-        # Check if the checkpoint exists locally, otherwise download it
         if not os.path.exists(ckpt_path):
             ckpt_path = hf_hub_download(repo_id=hf_repo, filename=ckpt_filename)
 
         args = DotDict(dict())
 
         args.pred_len = 96
-        args.model_name = "time-llm"  # "unitime"
+        args.model_name = "time-llm"
         args.seed = seed
         self.model_name = args.model_name
 
@@ -300,18 +270,13 @@ class TimeLLMForecaster(Baseline):
         print(f"Initializing model from config:\n{args} .....")
 
         if args.model_name == "time-llm":
-            # CLAUDE CODE MODIFICATION: Improved memory management for large TimeLLM models
-            # Clear GPU cache before model initialization to free up memory
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
-            # CLAUDE CODE MODIFICATION: Store current device for potential fallback
             current_device = torch_device
 
-            # Support both single GPU and multi-GPU modes
             model_loaded = False
 
-            # Strategy 1: Single GPU mode (if only 1 GPU available)
             if len(available_gpus) == 1:
                 print(f"🚀 SINGLE GPU: Attempting to load on GPU {available_gpus[0]}")
                 torch.cuda.empty_cache()
@@ -325,12 +290,10 @@ class TimeLLMForecaster(Baseline):
                 except Exception as e:
                     print(f"❌ Single GPU failed: {e}")
 
-            # Strategy 2: Multi-GPU DataParallel (if 2+ GPUs available)
             elif len(available_gpus) >= 2:
                 print(f"🚀 MULTI-GPU: Attempting DataParallel across GPUs: {available_gpus}")
                 torch.cuda.empty_cache()
 
-                # Try regular DataParallel
                 try:
                     print("Trying regular DataParallel")
                     self.model = TimeLLMModel(args)
@@ -352,7 +315,6 @@ class TimeLLMForecaster(Baseline):
                 except Exception as e:
                     print(f"❌ DataParallel failed: {e}")
 
-            # Strategy 3: CPU fallback
             if not model_loaded:
                 print("⚠️ GPU loading failed, attempting CPU fallback...")
                 try:
@@ -364,7 +326,6 @@ class TimeLLMForecaster(Baseline):
                 except Exception as e:
                     raise RuntimeError(f"All loading strategies failed. Last error: {e}")
 
-            # Store the actual device and multi-GPU status
             self.device = current_device
             self.uses_multi_gpu = isinstance(self.model, torch.nn.DataParallel)
             if self.uses_multi_gpu:
@@ -374,14 +335,11 @@ class TimeLLMForecaster(Baseline):
             self.backbone = TIME_LLM_CONFIGS.llm_model
 
         if ckpt_path is not None:
-            # CLAUDE CODE MODIFICATION: Load checkpoint with device-aware memory management
             try:
                 if self.device.type == 'cpu':
-                    # Load checkpoint to CPU when model is on CPU
                     ckpt = torch.load(ckpt_path, map_location='cpu')
                     print(f"Loaded checkpoint to CPU")
                 else:
-                    # Load checkpoint to the same device as model
                     ckpt = torch.load(ckpt_path, map_location=self.device)
                     print(f"Loaded checkpoint to {self.device}")
 
@@ -400,11 +358,10 @@ class TimeLLMForecaster(Baseline):
     ):
         set_seed(self.seed)
         self.model.pred_len = task_instance.future_time.shape[0]
-        # CLAUDE CODE MODIFICATION: Pass device to EvaluationPipeline
         pipeline = EvaluationPipeline(
             self.model,
             metrics={"mse_loss": truncate_mse_loss, "mae_loss": truncate_mae_loss},
-            device=self.device,  # Pass the device used by the main model
+            device=self.device,
         )
 
         if self.use_context:
@@ -412,24 +369,20 @@ class TimeLLMForecaster(Baseline):
         else:
             context = ""
 
-        # Get raw data and create tensor
         raw_data = task_instance.past_time[[task_instance.past_time.columns[-1]]].to_numpy().transpose()
         original_seq_len = raw_data.shape[-1]
 
-        # Pad to 512 for cuFFT compatibility BEFORE creating tensor (289 = 17^2 is not FFT-friendly)
         target_seq_len = 512
         if original_seq_len < target_seq_len:
             pad_size = target_seq_len - original_seq_len
-            # Left-pad with first value to preserve recent history at the end
             padding = np.repeat(raw_data[:, :1], pad_size, axis=1)
             raw_data = np.concatenate([padding, raw_data], axis=1)
             print(f"[TimeLLM] Padded input from {original_seq_len} to {raw_data.shape[-1]} for cuFFT compatibility")
 
-        # Create tensor and move to correct device (use self.device, not module-level torch_device)
         past_time = (
             torch.tensor(raw_data, dtype=torch.float32)
             .expand(n_samples, -1)
-            .to(self.device)  # Fixed: use self.device instead of torch_device
+            .to(self.device)
         )
 
         print(f"[TimeLLM] past_time shape: {past_time.shape}, device: {past_time.device}")
@@ -438,16 +391,15 @@ class TimeLLMForecaster(Baseline):
             torch.tensor(
                 task_instance.future_time[[task_instance.future_time.columns[-1]]]
                 .to_numpy()
-                .transpose(),  # (1, len(future_time))
+                .transpose(),
                 dtype=torch.float32,
             )
             .expand(n_samples, -1)
-            .to(self.device)  # Fixed: use self.device instead of torch_device
+            .to(self.device)
         )
 
-        # Process in batches - use subgroup_size=1 to avoid CUDA OOM on 80GB GPU
         batch_size = n_samples
-        subgroup_size = 1  # Process one sample at a time to avoid OOM (model uses ~76GB)
+        subgroup_size = 1
         predictions = []
 
         for i in range(0, batch_size, subgroup_size):
@@ -455,7 +407,6 @@ class TimeLLMForecaster(Baseline):
             future_time_subgroup = future_time[i : i + subgroup_size]
             context_subgroup = context
 
-            # Skip empty batches
             if past_time_subgroup.shape[0] == 0:
                 continue
 
@@ -466,7 +417,6 @@ class TimeLLMForecaster(Baseline):
             )
             predictions.append(preds_subgroup)
 
-            # Clear CUDA cache between samples to avoid memory fragmentation
             torch.cuda.empty_cache()
 
         prediction_tensor = torch.cat(predictions, dim=0)
@@ -482,11 +432,8 @@ class TimeLLMForecaster(Baseline):
         return prediction_tensor.cpu().numpy()
 
     def _make_prompt(self, task_instance):
-        """
         Formats the prompt and adds it to the LLMP arguments
 
-        """
-        prompt = f"""
         Forecast the future values of this time series, while considering the following
         background knowledge, scenario, and constraints.
 
@@ -498,43 +445,3 @@ class TimeLLMForecaster(Baseline):
 
         Constraints:
         {task_instance.constraints}
-
-        """
-
-        return prompt
-
-    @property
-    def cache_name(self) -> str:
-        args_to_include = [
-            "model_name",
-            "backbone",
-            "use_context",
-            "dataset",
-            "pred_len",
-        ]
-        return f"{self.__class__.__name__}_" + "_".join(
-            [f"{k}={getattr(self, k)}" for k in args_to_include]
-        )
-
-
-# if __name__ == "__main__":
-
-#     class DummyTask:
-#         def __init__(self):
-#             self.past_time = pd.Series(
-#                 np.random.randn(100), index=pd.date_range("20210101", periods=100)
-#             ).to_frame()
-#             self.future_time = pd.Series(
-#                 np.random.randn(10), index=pd.date_range("20210501", periods=10)
-#             ).to_frame()
-#             self.background = "The background is this"
-#             self.scenario = "The scenario is this"
-#             self.constraints = "The constraints are this"
-
-#     task_instance = DummyTask()
-
-#     dataset = "ETTh1"
-#     pred_len = 96
-#     forecaster = TimeLLMForecaster(dataset, pred_len, seed=42)
-#     predictions = forecaster(task_instance)
-#     print(predictions)

@@ -17,14 +17,11 @@ import logging
 import json
 import sys
 
-# Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Get the absolute path to the 'models' directory inside 'Time-LLM'
 unitime_models_path = os.path.join(script_dir, "UniTime", "models")
 unitime_path = os.path.join(script_dir, "UniTime")
 
-# Add 'models' directory to sys.path
 sys.path.append(unitime_models_path)
 sys.path.append(unitime_path)
 
@@ -32,18 +29,13 @@ from unitime.models.unitime import UniTime as UniTimeModel
 
 torch_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
 def truncate_mse_loss(future_time, future_pred):
-    # Assumes future_time.shape == (B, T1) and future_pred.shape == (B, T2)
     min_length = min(future_time.shape[-1], future_pred.shape[-1])
     return F.mse_loss(future_time[..., :min_length], future_pred[..., :min_length])
 
-
 def truncate_mae_loss(future_time, future_pred):
-    # Assumes future_time.shape == (B, T1) and future_pred.shape == (B, T2)
     min_length = min(future_time.shape[-1], future_pred.shape[-1])
     return F.l1_loss(future_time[..., :min_length], future_pred[..., :min_length])
-
 
 class DotDict(dict):
     """dot.notation access to dictionary attributes"""
@@ -51,7 +43,6 @@ class DotDict(dict):
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
-
 
 def find_pred_len_from_path(path: str) -> int:
     if "pl_96" or "pl96" in path:
@@ -69,7 +60,6 @@ def find_pred_len_from_path(path: str) -> int:
 
     return pred_len
 
-
 def find_model_name_from_path(path: str) -> str:
     path = path.lower()
     if "time-llm" in path or "timellm" in path:
@@ -82,7 +72,6 @@ def find_model_name_from_path(path: str) -> str:
         )
 
     return model_name
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -102,7 +91,6 @@ UNITIME_CONFIGS = DotDict(
         "dec_head_dropout": 0.1,
     }
 )
-
 
 class UniTimeWrapper(nn.Module):
 
@@ -124,7 +112,6 @@ class UniTimeWrapper(nn.Module):
         info = (data_id, seq_len, stride, context)
         return self.base_model(info=info, x_inp=past_time, mask=mask).squeeze(-1)
 
-
 class UniTimeBaseline(nn.Module):
 
     def __init__(self, model):
@@ -143,7 +130,6 @@ class UniTimeBaseline(nn.Module):
 
     def load_state_dict(self, state_dict, strict: bool = True, assign: bool = False):
         return self.base_model.load_state_dict(state_dict, strict, assign)
-
 
 class EvaluationPipeline:
 
@@ -164,7 +150,6 @@ class EvaluationPipeline:
 
         self.model = UniTimeBaseline(model).to(self.device)
 
-    # TODO: This method needs to be replaced to handle actual CiK benchmark
     def get_evaluation_loader(self) -> Iterable:
         samples = []
         for sample in self.dataset.values():
@@ -210,11 +195,9 @@ class EvaluationPipeline:
         self.model.train()
         return losses, predictions
 
-
 class UniTimeForecaster(Baseline):
 
-    __version__ = "0.0.3"  # Modification will trigger re-caching
-
+    __version__ = "0.0.3"
     def __init__(
         self,
         use_context,
@@ -239,19 +222,14 @@ class UniTimeForecaster(Baseline):
             UNITIME_CONFIGS.max_token_num = self.max_token_num
             self.dataset = "unified"
 
-        # Get the directory of the current script file
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Define the UniTime checkpoints directory
         ckpt_dir = os.path.join(script_dir, "UniTime", "checkpoints")
 
-        # Create the UniTime checkpoints directory if it doesn't exist
         os.makedirs(ckpt_dir, exist_ok=True)
 
-        # Path to the local checkpoint file
         ckpt_path = os.path.join(ckpt_dir, ckpt_filename)
 
-        # Check if the checkpoint exists locally, otherwise download it
         if not os.path.exists(ckpt_path):
             ckpt_path = hf_hub_download(repo_id=hf_repo, filename=ckpt_filename)
 
@@ -274,7 +252,6 @@ class UniTimeForecaster(Baseline):
             ckpt = torch.load(ckpt_path)
             self.model.load_state_dict(
                 ckpt
-            )  # TODO: Change this to not be specific to the Time-LLM checkpoint        else:
         super().__init__()
 
     def __call__(
@@ -297,7 +274,7 @@ class UniTimeForecaster(Baseline):
             torch.tensor(
                 task_instance.past_time[[task_instance.past_time.columns[-1]]]
                 .to_numpy()
-                .transpose(),  # (1, len(past_time))
+                .transpose(),
                 dtype=torch.float32,
             )
             .expand(n_samples, -1)
@@ -307,14 +284,12 @@ class UniTimeForecaster(Baseline):
             torch.tensor(
                 task_instance.future_time[[task_instance.future_time.columns[-1]]]
                 .to_numpy()
-                .transpose(),  # (1, len(future_time))
+                .transpose(),
                 dtype=torch.float32,
             )
             .expand(n_samples, -1)
             .to(torch_device)
         )
-        # non-determinism inherent to the model/GPU
-        # We get samples from the model itself
         _, predictions = pipeline.evaluation_step(
             past_time,
             future_time,
@@ -333,11 +308,8 @@ class UniTimeForecaster(Baseline):
         return predictions.cpu().numpy()
 
     def _make_prompt(self, task_instance):
-        """
         Formats the prompt and adds it to the LLMP arguments
 
-        """
-        prompt = f"""
         Forecast the future values of this time series, while considering the following
         background knowledge, scenario, and constraints.
 
@@ -349,44 +321,3 @@ class UniTimeForecaster(Baseline):
 
         Constraints:
         {task_instance.constraints}
-
-        """
-
-        return prompt
-
-    @property
-    def cache_name(self) -> str:
-        args_to_include = [
-            "model_name",
-            "backbone",
-            "max_token_num",
-            "use_context",
-            "dataset",
-            "pred_len",
-        ]
-        return f"{self.__class__.__name__}_" + "_".join(
-            [f"{k}={getattr(self, k)}" for k in args_to_include]
-        )
-
-
-# if __name__ == "__main__":
-
-#     class DummyTask:
-#         def __init__(self):
-#             self.past_time = pd.Series(
-#                 np.random.randn(100), index=pd.date_range("20210101", periods=100)
-#             ).to_frame()
-#             self.future_time = pd.Series(
-#                 np.random.randn(10), index=pd.date_range("20210501", periods=10)
-#             ).to_frame()
-#             self.background = "The background is this"
-#             self.scenario = "The scenario is this"
-#             self.constraints = "The constraints are this"
-
-#     task_instance = DummyTask()
-
-#     dataset = "etth1"
-#     pred_len = 96
-#     forecaster = UniTimeForecaster(dataset, pred_len, seed=42)
-#     predictions = forecaster(task_instance)
-#     print(predictions)

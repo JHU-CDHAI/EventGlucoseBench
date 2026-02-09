@@ -1,3 +1,0 @@
-[
-    {"label": "Mixtral-8x7B (no ctx)", "method": "llmp", "llm": "mixtral-8x7B", "use_context": false}
-]

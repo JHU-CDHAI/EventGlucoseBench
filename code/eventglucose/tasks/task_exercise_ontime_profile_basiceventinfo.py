@@ -14,112 +14,112 @@ from ..config import DATA_LTS_FOLDER
 
 
 ############################################################
-# New Medium Level: Profile + event timing + key metrics (calories/carbs)
+# Basic Event Info Level: Profile + event timing information
 ############################################################
 
 
 
-class EventCGMTask_D1_Age18_Diet_Ontime_NewMedium(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age18_Exercise_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
 
-    __version__ = "0.1.0"
+    __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
         return {
             "data_lts_folder": DATA_LTS_FOLDER,
-            "eventtype": ["Diet5Min"],
+            "eventtype": ["Exercise5Min"],
             "subgroup": ["D1-Age18"],
             "lag": 0,
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newmedium',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D1_Age40_Diet_Ontime_NewMedium(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age40_Exercise_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
 
-    __version__ = "0.1.0"
+    __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
         return {
             "data_lts_folder": DATA_LTS_FOLDER,
-            "eventtype": ["Diet5Min"],
+            "eventtype": ["Exercise5Min"],
             "subgroup": ["D1-Age40"],
             "lag": 0,
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newmedium',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
-        }
+        }   
 
 
-class EventCGMTask_D1_Age65_Diet_Ontime_NewMedium(EventCGMTask_withEvent_withLag):
+class EventCGMTask_D1_Age65_Exercise_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
 
-    __version__ = "0.1.0"
+    __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
         return {
             "data_lts_folder": DATA_LTS_FOLDER,
-            "eventtype": ["Diet5Min"],
+            "eventtype": ["Exercise5Min"],
             "subgroup": ["D1-Age65"],
             "lag": 0,
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newmedium',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
-        }
+        }           
 
 
-class EventCGMTask_D2_Age18_Diet_Ontime_NewMedium(EventCGMTask_withEvent_withLag):
-    __version__ = "0.1.0"
+class EventCGMTask_D2_Age18_Exercise_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
+    __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
         return {
             "data_lts_folder": DATA_LTS_FOLDER,
-            "eventtype": ["Diet5Min"],
+            "eventtype": ["Exercise5Min"],
             "subgroup": ["D2-Age18"],
             "lag": 0,
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newmedium',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D2_Age40_Diet_Ontime_NewMedium(EventCGMTask_withEvent_withLag):
-    __version__ = "0.1.0"
+class EventCGMTask_D2_Age40_Exercise_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
+    __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
         return {
             "data_lts_folder": DATA_LTS_FOLDER,
-            "eventtype": ["Diet5Min"],
+            "eventtype": ["Exercise5Min"],
             "subgroup": ["D2-Age40"],
             "lag": 0,
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newmedium',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
 
-class EventCGMTask_D2_Age65_Diet_Ontime_NewMedium(EventCGMTask_withEvent_withLag):
-    __version__ = "0.1.0"
+class EventCGMTask_D2_Age65_Exercise_Ontime_BasicEventInfo(EventCGMTask_withEvent_withLag):
+    __version__ = "0.2.0"
 
     def get_task_config(self) -> Dict:
         return {
             "data_lts_folder": DATA_LTS_FOLDER,
-            "eventtype": ["Diet5Min"],
+            "eventtype": ["Exercise5Min"],
             "subgroup": ["D2-Age65"],
             "lag": 0,
             "context_length": 289,
             "prediction_length": 24,
             "use_calendar_covs": False,
-            'prompt_level': 'newmedium',
+            'prompt_level': 'basic_event_info',
             'prompt_max_digits': 1,
         }
 
@@ -130,10 +130,10 @@ class EventCGMTask_D2_Age65_Diet_Ontime_NewMedium(EventCGMTask_withEvent_withLag
 # ============================================================================
 
 __cluster__ = [
-    EventCGMTask_D1_Age18_Diet_Ontime_NewMedium,
-    EventCGMTask_D1_Age40_Diet_Ontime_NewMedium,
-    EventCGMTask_D1_Age65_Diet_Ontime_NewMedium,
-    EventCGMTask_D2_Age18_Diet_Ontime_NewMedium,
-    EventCGMTask_D2_Age40_Diet_Ontime_NewMedium,
-    EventCGMTask_D2_Age65_Diet_Ontime_NewMedium,
+    EventCGMTask_D1_Age18_Exercise_Ontime_BasicEventInfo,
+    EventCGMTask_D1_Age40_Exercise_Ontime_BasicEventInfo,
+    EventCGMTask_D1_Age65_Exercise_Ontime_BasicEventInfo,
+    EventCGMTask_D2_Age18_Exercise_Ontime_BasicEventInfo,
+    EventCGMTask_D2_Age40_Exercise_Ontime_BasicEventInfo,
+    EventCGMTask_D2_Age65_Exercise_Ontime_BasicEventInfo,
 ]

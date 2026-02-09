@@ -1,4 +1,0 @@
-[
-    {"label": "Qwen2.5-7B-Instruct (no ctx)", "method": "llmp", "llm": "qwen2.5-7B-Instruct", "use_context": false}
-]
-
