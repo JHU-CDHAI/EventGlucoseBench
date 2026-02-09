@@ -6,7 +6,7 @@ A comprehensive benchmark for continuous glucose monitoring (CGM) forecasting wi
 
 EventGlucose (GlucoCIK - Glucose Context is Key) provides:
 - **Event-aware sampling**: Predictions centered around intervention events (meals, medications, exercise)
-- **Foundation model evaluation**: Integration with 15+ SOTA forecasting models
+- **Foundation model evaluation**: Integration with 18 SOTA forecasting models
 - **Contextual information**: Patient demographics, intervention timing, and calendar features
 - **Probabilistic forecasting**: CRPS-based evaluation with uncertainty quantification
 
@@ -63,7 +63,7 @@ mkdir -p _WorkSpace/{Data,Model,Result}
 eglu-run --exp-spec experiments/statistical-models/statsmodels_c40.json
 
 # Run foundation model baselines
-eglu-run --exp-spec experiments/foundation-models/chronos_small_g1.json
+eglu-run --exp-spec experiments/foundation-models/chronos_large_g1.json
 
 # List available experiment methods
 eglu-run --list-exps
@@ -94,21 +94,28 @@ code/
 
 ### Supported Models
 
-**Foundation Models:**
-- Chronos (Tiny, Small, Base, Large)
+**Direct Prompt (LLM APIs):**
+- Claude 3.5/4.5 (Haiku, Sonnet, Opus)
+- GPT-4o, GPT-4o-mini, GPT-5-mini
+- Gemini-2.5-Flash
+- Qwen-3-235B (via OpenRouter)
+
+**LLM Processes (HuggingFace):**
+- Llama-3 (70B-Instruct, 8B-Instruct)
+
+**Multimodal Foundation Models:**
+- UniTime (with ETTh1 backbone)
+- TimeLLM (with ETTh1 backbone)
+
+**Time Series Foundation Models:**
+- Chronos-Large
+- Moirai-Large
 - Lag-Llama
-- Moirai (Small, Base, Large)
-- UniTime
-- TimeLLM
 
-**LLM-based:**
-- DirectPrompt (GPT-4, Claude, Gemini)
-- LLM Processes (Llama, Qwen, Mixtral)
-
-**Statistical:**
-- Statsmodels (ARIMA, ETS)
-- R Forecast
-- Nixtla TimeGEN
+**Statistical Baselines:**
+- ARIMA (via R forecast)
+- ETS (via R forecast)
+- Exponential Smoothing (via statsmodels)
 
 ## 📊 Experiments
 
