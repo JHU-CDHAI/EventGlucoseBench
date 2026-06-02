@@ -1,4 +1,7 @@
 import ast
+import importlib
+import copyreg
+from abc import ABCMeta
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -9,6 +12,61 @@ from ..base import UnivariateCRPSTask
 from . import WeightCluster
 import json
 import ast
+
+
+# ---------------------------------------------------------------------------
+# Picklable metaclass for dynamically-patched task classes
+# ---------------------------------------------------------------------------
+
+def make_presample_cls(base_cls, folder: str):
+    """
+    Build a _PreSampleMeta subclass of base_cls that loads from `folder`
+    and selects rows deterministically by seed (seed 1 → row 0, …).
+    """
+    unique_name = f"_PreSampled_{base_cls.__name__}"
+
+    def _get_task_config(self):
+        cfg = base_cls.get_task_config(self)
+        cfg["use_pre_sampled"] = True
+        cfg["pre_sampled_folder"] = folder
+        cfg.pop("data_lts_folder", None)
+        return cfg
+
+    PatchedCls = _PreSampleMeta(unique_name, (base_cls,), {
+        "get_task_config": _get_task_config,
+        "_ps_base_module": base_cls.__module__,
+        "_ps_base_qualname": base_cls.__qualname__,
+        "_ps_folder": folder,
+    })
+    PatchedCls.__module__ = base_cls.__module__
+    PatchedCls.__qualname__ = unique_name
+    PatchedCls.__name__ = base_cls.__name__
+    return PatchedCls
+
+
+def _rebuild_presample_cls(base_module: str, base_qualname: str, folder: str):
+    """Reconstruct a pre-sampled patched class in a worker process."""
+    mod = importlib.import_module(base_module)
+    base_cls = mod
+    for attr in base_qualname.split('.'):
+        base_cls = getattr(base_cls, attr)
+    return make_presample_cls(base_cls, folder)
+
+
+class _PreSampleMeta(ABCMeta):
+    """Metaclass compatible with all task base classes. Handles pickle across workers."""
+    pass
+
+
+def _reduce_presample_meta(cls):
+    return (_rebuild_presample_cls, (
+        cls._ps_base_module,
+        cls._ps_base_qualname,
+        cls._ps_folder,
+    ))
+
+
+copyreg.pickle(_PreSampleMeta, _reduce_presample_meta)
 
 
     
@@ -162,16 +220,21 @@ def convert_event_info_to_dict(events):
 def load_df_lts_data(task_config: Dict) -> pd.DataFrame:
     """Load the dataframe (pickle expected)."""
 
-    if 'data_lts_folder' in task_config:
+    # pre_sampled_folder takes priority over data_lts_folder
+    folder_key = 'pre_sampled_folder' if 'pre_sampled_folder' in task_config else \
+                 'data_lts_folder' if 'data_lts_folder' in task_config else None
+
+    if folder_key is not None:
+        folder = task_config[folder_key]
         if 'subgroup' in task_config or 'eventtype' in task_config:
-            print('data_lts_folder', task_config['data_lts_folder'])
-            data_lts_files = select_files(task_config['data_lts_folder'], include=task_config, suffix=".pkl")
+            print(folder_key, folder)
+            data_lts_files = select_files(folder, include=task_config, suffix=".pkl")
             print(data_lts_files)
         else:
-            data_lts_files = os.listdir(task_config['data_lts_folder'])
+            data_lts_files = os.listdir(folder)
         df_li = []
         for data_lts_file in data_lts_files:
-            full_path = os.path.join(task_config['data_lts_folder'], data_lts_file,)
+            full_path = os.path.join(folder, data_lts_file)
             try:
                 print(full_path)
                 df = pd.read_pickle(full_path)
@@ -338,8 +401,12 @@ class EventCGMTask_withEvent_withLag(UnivariateCRPSTask):
         C = int(task_config["context_length"])
         H = int(task_config["prediction_length"])
 
-        # Directly select a random row since data is already filtered and validated
-        if self.random is not None:
+        # Row selection: deterministic for pre-sampled data, random otherwise.
+        # evaluate_all_tasks uses seeds 1…n_instances, so seed-1 maps to row 0…n-1.
+        if task_config.get("use_pre_sampled", False):
+            seed = getattr(self, '_seed', None)
+            idx_to_select = ((seed - 1) if seed is not None else 0) % len(df)
+        elif self.random is not None:
             if hasattr(self.random, 'choice'):
                 idx_to_select = self.random.choice(len(df))
             else:
