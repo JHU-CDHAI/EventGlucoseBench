@@ -57,17 +57,40 @@ mkdir -p _WorkSpace/{Data,Model,Result}
 ```
 
 ### 4. Run Experiments
-
+The published dataset contains anonymized subgroups that match the exact data used in the paper for evaluation. Use `--pre-sampled-dir` to run on it instead of the private `@task` data.
 ```bash
-# Run a simple baseline experiment
-eglu-run --exp-spec experiments/statistical-models/statsmodels_c40.json
+# List available tasks and models
+python code/scripts/run_individual.py --list-tasks
+python code/scripts/run_individual.py --list-models
+python code/scripts/run_individual.py --list-model-types
 
-# Run foundation model baselines
-eglu-run --exp-spec experiments/foundation-models/chronos_large_g1.json
+# Single task
+python code/scripts/run_individual.py \
+    --task EventCGMTask_D1_Age18_Diet_Ontime_NoCtx \
+    --model random \
+    --n-instances 10 --n-samples 25 \
+    --pre-sampled-dir _WorkSpace/Data/EventGlucose/publish-data
 
-# List available experiment methods
-eglu-run --list-exps
+# All context levels
+python code/scripts/run_individual.py \
+    --task EventCGMTask_D1_Age18_Diet_Ontime_allcontext \
+    --model gpt-4o-context \
+    --n-instances 10 --n-samples 25 \
+    --pre-sampled-dir _WorkSpace/Data/EventGlucose/publish-data
+
+# Full benchmark sweep
+python code/scripts/run_individual.py \
+    --all-tasks \
+    --model foundation-all \
+    --n-instances 10 --n-samples 50 \
+    --pre-sampled-dir _WorkSpace/Data/EventGlucose/publish-data
 ```
+
+**Key properties of `--pre-sampled-dir`:**
+- Rows are selected **deterministically** by seed: seed 1 → row 0, seed 2 → row 1, …
+- `--n-instances` should not exceed the number of rows in each PKL (exactly 10 in `publish-data`)
+- Results are saved locally to `_WorkSpace/Result/` — the public dataset is never modified
+- Can be combined with `--skip-done` to resume interrupted runs
 
 ## 🏗️ Architecture
 
@@ -95,26 +118,33 @@ code/
 ### Supported Models
 
 **Direct Prompt (LLM APIs):**
-- Claude 3.5/4.5 (Haiku, Sonnet, Opus)
-- GPT-4o, GPT-4o-mini, GPT-5-mini
-- Gemini-2.5-Flash
-- Qwen-3-235B (via OpenRouter)
+- Claude 4.5 (Haiku, Sonnet, Opus) — via Anthropic API or Claude Code SDK
+- GPT-4o, GPT-4o-mini, GPT-5-mini — via OpenAI API
+- Gemini-2.5-Flash, Qwen-3-235B, Llama-3, Mixtral — via OpenRouter
 
 **LLM Processes (HuggingFace):**
-- Llama-3 (70B-Instruct, 8B-Instruct)
+- Llama-3 (8B, 70B, Instruct variants)
+- Mixtral-8x7B (Instruct variants)
+- Qwen-2.5 (0.5B, 7B Instruct)
 
 **Multimodal Foundation Models:**
-- UniTime (with ETTh1 backbone)
-- TimeLLM (with ETTh1 backbone)
+- UniTime (ETTh1 backbone)
+- TimeLLM (ETTh1 backbone)
 
 **Time Series Foundation Models:**
-- Chronos-Large
-- Moirai-Large
+- Chronos (tiny/mini/small/base/large)
+- Moirai (small/base/large)
 - Lag-Llama
 
+**Transformer Models (trained on-the-fly):**
+- iTransformer, Autoformer, Causal Transformer
+- All available with (`-ctx`) and without context covariates
+
+**LTSF-Linear Models:**
+- DLinear, NLinear
+
 **Statistical Baselines:**
-- ARIMA (via R forecast)
-- ETS (via R forecast)
+- ARIMA, ETS (via R forecast)
 - Exponential Smoothing (via statsmodels)
 
 ## 📊 Experiments
