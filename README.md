@@ -47,6 +47,8 @@ See [SETUP_CREDENTIALS.md](SETUP_CREDENTIALS.md) for detailed credential setup i
 
 ### 3. Prepare Data
 
+The EventGlucose benchmark dataset is available on the Hugging Face Hub at [`CDHAI/EventGlucoseBench`](https://huggingface.co/datasets/CDHAI/EventGlucoseBench).
+
 ```bash
 # Create symbolic links to your data and model directories
 ln -s /path/to/your/data _Data
